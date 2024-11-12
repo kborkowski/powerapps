@@ -17,7 +17,7 @@
           Width: =299
           X: =765
           Y: =452
-    - HtmlText1_1:
+    - HtmlDiv:
         Control: HtmlViewer
         Properties:
           HtmlText: |-
@@ -44,11 +44,15 @@
           Width: =260
           X: =416
           Y: =428
-    - HtmlText1:
+    - HtmlH1:
         Control: HtmlViewer
         Properties:
-          HtmlText: |+
-            =Concat(Sequence(6),$"<h{Value}>This is Heading {Value}</h{Value}> ","")
+          HtmlText: |-
+            =Concat(
+                Sequence(6),
+                $"<h{Value}>This is Heading {Value}</h{Value}> ",
+                ""
+            )
           AutoHeight: =true
           Height: =490
           PaddingBottom: =0
