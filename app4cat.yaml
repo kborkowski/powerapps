@@ -1,0 +1,61 @@
+- Screen1:
+    Control: Screen
+    Children:
+    - Label1:
+        Control: Label
+        Properties:
+          Text: |-
+            ="h1 is    32px    (2em)
+            h2 is    24px  (1.5em)
+            h3 is    18.72px (1.17em)
+            h4 is    16px    (1em)
+            h5 is    13.28px (0.83em)
+            h6 is    10.72px (0.67em)"
+          Height: =209
+          Size: =16
+          VerticalAlign: =VerticalAlign.Top
+          Width: =299
+          X: =765
+          Y: =452
+    - HtmlText1_1:
+        Control: HtmlViewer
+        Properties:
+          HtmlText: |-
+            =Concat(
+                Sequence(6),
+                "<div style='padding:10px; font-size:" & Switch(
+                    Value,
+                    1, "2em",
+                    2, "1.5em",
+                    3, "1.17em",
+                    4, "1em",
+                    5, "0.83em",
+                    6, "0.67em"
+                ) & "; font-weight:900'> This is Heading " & Value & " </div> ",
+                ""
+            )
+          AutoHeight: =true
+          Height: =490
+          PaddingBottom: =0
+          PaddingLeft: =0
+          PaddingRight: =0
+          PaddingTop: =0
+          Size: =
+          Width: =260
+          X: =416
+          Y: =428
+    - HtmlText1:
+        Control: HtmlViewer
+        Properties:
+          HtmlText: |+
+            =Concat(Sequence(6),$"<h{Value}>This is Heading {Value}</h{Value}> ","")
+          AutoHeight: =true
+          Height: =490
+          PaddingBottom: =0
+          PaddingLeft: =0
+          PaddingRight: =0
+          PaddingTop: =0
+          Size: =
+          Width: =260
+          X: =100
+          Y: =420
