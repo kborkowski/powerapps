@@ -1,0 +1,16 @@
+- HtmlText1:
+    Control: HtmlViewer
+    Properties:
+      HtmlText: |-
+        =With({centerDiv:"display:grid;align-content:center; justify-items:center;"},
+        $"<div style='width:{Self.Width}px; height:{Self.Height - 1}px; {centerDiv} '>
+            <div style='width:200px; aspect-ratio:1; border-radius:100px; background-color:red; {centerDiv}'>
+                <div style='width:150px; aspect-ratio:4; background-color:white;'></div>
+            </div>
+        </div>")
+      Height: =Parent.Height
+      PaddingBottom: =0
+      PaddingLeft: =0
+      PaddingRight: =0
+      PaddingTop: =0
+      Width: =Parent.Width
