@@ -1,0 +1,435 @@
+ComponentDefinitions:
+  Carousel:
+    DefinitionType: CanvasComponent
+    Description: A customizable, auto-rotating banner carousel component with Fluent 2 design styling. Displays promotional content with images, titles, descriptions, and call-to-action buttons.
+    AllowCustomization: true
+    CustomProperties:
+      BoxMargin:
+        PropertyKind: Input
+        DisplayName: Box margin
+        Description: Margin of the content box
+        DataType: Number
+        Default: =40
+      CarouselItems:
+        PropertyKind: Output
+        DisplayName: Carousel Items
+        Description: A custom property
+        DataType: Table
+      ChangeItem:
+        PropertyKind: Action
+        DisplayName: Change Item
+        Description: A custom property
+        ReturnType: None
+        Parameters:
+          - Direction:
+              Description: Next or Previous
+              DataType: Text
+              Default: ="Next"
+      Glassmorphism:
+        PropertyKind: Input
+        DisplayName: Glassmorphism?
+        Description: A custom property
+        DataType: Boolean
+        Default: =true
+      Items:
+        PropertyKind: Input
+        DisplayName: Items
+        Description: A custom property
+        RaiseOnReset: true
+        DataType: Table
+        Default: |-
+          =Table(
+              {
+                  ItemKey: "item1",
+                  ItemTitle: "Title 1",
+                  ItemDescription: "Description 1",
+                  ItemButtonText: "Call to Action 1!",
+                  ItemImage: SampleImage
+              },
+              {
+                  ItemKey: "item2",
+                  ItemTitle: "Title 2",
+                  ItemDescription: "Description 2",
+                  ItemButtonText: "Call to Action 2!",
+                  ItemImage: SampleImage
+              },
+              {
+                  ItemKey: "item3",
+                  ItemTitle: "Title 3",
+                  ItemDescription: "Description 3",
+                  ItemButtonText: "Call to Action 3!",
+                  ItemImage: SampleImage
+              }
+          )
+      OnSelect:
+        PropertyKind: Event
+        DisplayName: OnSelect
+        Description: A custom property
+        ReturnType: None
+        Default: =Switch(ItemKey,Blank(),"", Notify(Self.SelectedItem.CarouselInfo.ItemTitle & " was clicked",NotificationType.Information, 1000))
+        Parameters:
+          - ItemKey:
+              Description: A parameter
+              DataType: Text
+              Default: ="Text"
+      OverlayShadow:
+        PropertyKind: Input
+        DisplayName: OverlayShadow
+        Description: A custom property
+        RaiseOnReset: true
+        DataType: Text
+        Default: =DropShadow.None
+      SelectedItem:
+        PropertyKind: Output
+        DisplayName: Selected Item
+        Description: A custom property
+        DataType: Record
+      XPositionOfContent:
+        PropertyKind: Input
+        DisplayName: X position of content
+        Description: left, center or right
+        DataType: Text
+        Default: ="center"
+      YPositionOfContent:
+        PropertyKind: Input
+        DisplayName: Y position of content
+        Description: top, center or bottom
+        DataType: Text
+        Default: ="bottom"
+    Properties:
+      CarouselItems: |-
+        =AddColumns(
+            Sequence(CountRows(Self.Items)),
+            CarouselInfo,
+            Index(
+                Self.Items,
+                Value
+            )
+        )
+      ChangeItem: |-
+        =/*This expression sets the global variable varSelectedItem to the next or previous item in the carousel based on the Direction value, defaulting to the first or last item if an error occurs.*/
+        Set(
+            varSelectedItem,
+            IfError(
+                Index(
+                    Self.CarouselItems,
+                    Self.SelectedItem.Value + If(
+                        Direction = "Next",
+                        1,
+                        -1
+                    )
+                ),
+                Index(
+                    Self.CarouselItems,
+                    If(
+                        Direction = "Next",
+                        1,
+                        CountRows(Self.CarouselItems)
+                    )
+                )
+            )
+        )
+      OnReset: |-
+        =Set(varSelectedItem,First(Self.CarouselItems));
+        Set(varStartTimer, true);
+      SelectedItem: =Coalesce(varSelectedItem,First(Self.CarouselItems))
+    Children:
+      - timAutoPlay:
+          Control: Timer@2.1.0
+          Properties:
+            AutoStart: =true
+            Duration: =5000
+            OnTimerEnd: =Carousel.ChangeItem("Next");Set(varStartTimer,true);Set(varGUID,GUID());
+            OnTimerStart: =Set(varGUID,GUID())
+            Repeat: =true
+            Start: =varStartTimer
+            Text: =Text(Time(0, 0, (Self.Duration-Self.Value)/1000+1), "hh:mm:ss")
+            Visible: =false
+            X: =40
+            Y: =40
+      - cntWrapper:
+          Control: GroupContainer@1.3.0
+          Variant: AutoLayout
+          Properties:
+            DropShadow: =DropShadow.None
+            Height: =Parent.Height
+            LayoutAlignItems: =LayoutAlignItems.Center
+            LayoutDirection: =LayoutDirection.Vertical
+            LayoutGap: =Max(8, Self.PaddingBottom)
+            PaddingBottom: |-
+              =Switch(
+                  Carousel.OverlayShadow,
+                  DropShadow.None,
+                  0,
+                   DropShadow.Semilight, 6+2,
+                  DropShadow.Light, 4+4,
+                  DropShadow.Regular, 10,
+                  DropShadow.Semibold, 18,
+                  DropShadow.Bold, 37,
+                  DropShadow.ExtraBold, 74,
+                  0
+              )
+            PaddingLeft: |-
+              =Switch(Carousel.OverlayShadow,    DropShadow.None, 0,
+               DropShadow.Semilight, 6,
+                  DropShadow.Light, 4,
+                  DropShadow.Regular, 10,
+                  DropShadow.Semibold, 18,
+                  DropShadow.Bold, 37,
+                  DropShadow.ExtraBold, 74,
+                  0)
+            PaddingRight: |-
+              =Switch(
+                  Carousel.OverlayShadow,
+                  DropShadow.None,
+                  0,
+                    DropShadow.Semilight, 6,
+                  DropShadow.Light, 4,
+                  DropShadow.Regular, 10,
+                  DropShadow.Semibold, 18,
+                  DropShadow.Bold, 37,
+                  DropShadow.ExtraBold, 74,
+                  0
+              )
+            PaddingTop: |-
+              =Switch(Carousel.OverlayShadow,  DropShadow.None, 0,
+                   DropShadow.Semilight, 2,
+                  DropShadow.Light, 2,
+                  DropShadow.Regular, 2,
+                  DropShadow.Semibold, 2,
+                  DropShadow.Bold, 8,
+                  DropShadow.ExtraBold, 8,
+                  0)
+            Width: =Parent.Width
+          Children:
+            - cntOverlay:
+                Control: GroupContainer@1.3.0
+                Variant: ManualLayout
+                Properties:
+                  DropShadow: =Carousel.OverlayShadow
+                  LayoutMaxHeight: =0
+                  LayoutMaxWidth: =0
+                  LayoutMinHeight: =16
+                  LayoutMinWidth: =16
+                  RadiusBottomLeft: =16
+                  RadiusBottomRight: =16
+                  RadiusTopLeft: =16
+                  RadiusTopRight: =16
+                Children:
+                  - imgBanner:
+                      Control: Image@2.2.3
+                      Properties:
+                        BorderColor: =RGBA(0, 18, 107, 1)
+                        Height: =Parent.Height
+                        Image: =Carousel.SelectedItem.CarouselInfo.ItemImage
+                        ImagePosition: =ImagePosition.Fill
+                        Width: =Parent.Width
+                  - htmBlur:
+                      Control: HtmlViewer@2.1.0
+                      Properties:
+                        Height: =cntContent.Height+2
+                        HtmlText: |-
+                          =$"<div id='{Coalesce(varGUID, GUID())}' style='
+                                    height:{Self.Height-3}px;
+                                    backdrop-filter: blur(10px);
+                                    -webkit-backdrop-filter: blur(10px);
+                                    will-change: backdrop-filter;
+                                    border-radius: {cntContent.RadiusBottomLeft}px;
+                                    border: 1px solid rgba(255, 255, 255, 0.18);
+                                    '></div>"
+                        PaddingBottom: =0
+                        PaddingLeft: =0
+                        PaddingRight: =0
+                        PaddingTop: =0
+                        Visible: =Carousel.Glassmorphism
+                        Width: =cntContent.Width
+                        X: =cntContent.X
+                        Y: |+
+                          =cntContent.Y
+                  - cntContent:
+                      Control: GroupContainer@1.3.0
+                      Variant: AutoLayout
+                      Properties:
+                        Fill: =RGBA(255, 255, 255, If(Carousel.Glassmorphism,0.5,1))
+                        Height: =cntAutoHeight.Y
+                        LayoutAlignItems: =LayoutAlignItems.Center
+                        LayoutDirection: =LayoutDirection.Vertical
+                        LayoutGap: =16
+                        PaddingBottom: =16
+                        PaddingLeft: =16
+                        PaddingRight: =16
+                        PaddingTop: =16
+                        RadiusBottomLeft: =12
+                        RadiusBottomRight: =12
+                        RadiusTopLeft: =12
+                        RadiusTopRight: =12
+                        Width: =Min(Parent.Width-40,350)
+                        X: "=Switch(\n    Carousel.XPositionOfContent,\n    \"left\",\n    Min(\n        Parent.Width / 2 - Self.Width/2,\n        Carousel.BoxMargin\n    ),\n    \"right\",\n        (Parent.Width - Self.Width)-\n        Carousel.BoxMargin\n    ,\n    \"center\",\n        Parent.Width / 2 - Self.Width/2\n    \n)"
+                        Y: =Switch(Carousel.YPositionOfContent, "center", Parent.Height/2-Self.Height/2, "top", Carousel.BoxMargin, "bottom", Parent.Height-cntContent.Height-Carousel.BoxMargin, Parent.Height/2-Self.Height/2)
+                      Children:
+                        - lblTitle:
+                            Control: Text@0.0.51
+                            Properties:
+                              AlignInContainer: =AlignInContainer.Stretch
+                              AutoHeight: =true
+                              LayoutMaxHeight: =0
+                              LayoutMaxWidth: =0
+                              LayoutMinHeight: =16
+                              LayoutMinWidth: =0
+                              Size: =20
+                              Text: =Carousel.SelectedItem.CarouselInfo.ItemTitle
+                              Weight: ='TextCanvas.Weight'.Semibold
+                        - lblDescription:
+                            Control: Text@0.0.51
+                            Properties:
+                              AlignInContainer: =AlignInContainer.Stretch
+                              AutoHeight: =true
+                              LayoutMaxHeight: =0
+                              LayoutMaxWidth: =0
+                              LayoutMinHeight: =16
+                              LayoutMinWidth: =0
+                              Size: =12
+                              Text: =Carousel.SelectedItem.CarouselInfo.ItemDescription
+                              Weight: ='TextCanvas.Weight'.Regular
+                        - btnAction:
+                            Control: Button@0.0.45
+                            Properties:
+                              AlignInContainer: =AlignInContainer.Start
+                              LayoutMaxHeight: =0
+                              LayoutMaxWidth: =0
+                              LayoutMinHeight: =16
+                              LayoutMinWidth: =16
+                              OnSelect: =Carousel.OnSelect(Carousel.SelectedItem.CarouselInfo.ItemKey);Set(varStartTimer,false);
+                              PaddingLeft: =0
+                              PaddingRight: =0
+                              Text: =Carousel.SelectedItem.CarouselInfo.ItemButtonText
+                              Visible: =!IsBlank(Self.Text)
+                              Width: =htmCTAButtonWidth.Height
+                        - cntAutoHeight:
+                            Control: GroupContainer@1.3.0
+                            Variant: ManualLayout
+                            Properties:
+                              DropShadow: =DropShadow.None
+                              FillPortions: =0
+                              Height: =1
+                              LayoutMaxHeight: =0
+                              LayoutMaxWidth: =0
+                              LayoutMinHeight: =16
+                              LayoutMinWidth: =16
+            - cntNav:
+                Control: GroupContainer@1.3.0
+                Variant: AutoLayout
+                Properties:
+                  DropShadow: =DropShadow.None
+                  FillPortions: =0
+                  Height: =24
+                  LayoutAlignItems: =LayoutAlignItems.Center
+                  LayoutDirection: =LayoutDirection.Horizontal
+                  LayoutJustifyContent: =LayoutJustifyContent.Center
+                  LayoutMaxHeight: =0
+                  LayoutMaxWidth: =0
+                  LayoutMinHeight: =16
+                  LayoutMinWidth: =16
+                Children:
+                  - btnPrevious:
+                      Control: Button@0.0.45
+                      Properties:
+                        Appearance: ='ButtonCanvas.Appearance'.Transparent
+                        Height: =24
+                        Icon: ="ChevronLeft"
+                        Layout: ='ButtonCanvas.Layout'.IconOnly
+                        LayoutMaxHeight: =0
+                        LayoutMaxWidth: =0
+                        LayoutMinHeight: =16
+                        LayoutMinWidth: =16
+                        OnSelect: =Carousel.ChangeItem("Previous");Set(varStartTimer,false);Set(varGUID,GUID());
+                        Text: =
+                        Width: =24
+                  - galCarouselNavigation:
+                      Control: Gallery@2.15.0
+                      Variant: Horizontal
+                      Properties:
+                        AlignInContainer: =AlignInContainer.Center
+                        BorderColor: =RGBA(0, 18, 107, 1)
+                        FillPortions: =0
+                        Height: =24
+                        Items: =Carousel.CarouselItems
+                        LayoutMaxHeight: =0
+                        LayoutMaxWidth: =0
+                        LayoutMinHeight: =16
+                        LayoutMinWidth: =16
+                        TemplatePadding: =0
+                        TemplateSize: =24
+                        Width: =Self.AllItemsCount * Self.TemplateWidth
+                      Children:
+                        - cntSelectedItem:
+                            Control: GroupContainer@1.3.0
+                            Variant: ManualLayout
+                            Properties:
+                              Fill: =App.Theme.Colors.Primary
+                              Height: =8
+                              RadiusBottomLeft: =16
+                              RadiusBottomRight: =16
+                              RadiusTopLeft: =16
+                              RadiusTopRight: =16
+                              Width: =If(ThisItem.CarouselInfo.ItemKey = IfError(Carousel.SelectedItem.CarouselInfo.ItemKey,8), 16,8)
+                              X: =Parent.TemplateWidth/2-Self.Width/2
+                              Y: =Parent.TemplateHeight/2-Self.Height/2
+                            Children:
+                              - imgSelection:
+                                  Control: Image@2.2.3
+                                  Properties:
+                                    BorderColor: =RGBA(0, 18, 107, 1)
+                                    Height: =Parent.Height
+                                    Image: =
+                                    OnSelect: |
+                                      =Set(
+                                          varSelectedItem,
+                                          ThisItem
+                                      );
+                                      Set(
+                                          varStartTimer,
+                                          false
+                                      );
+                                      Set(
+                                          varGUID,
+                                          GUID()
+                                      );
+                                    TabIndex: =0
+                                    Width: =Parent.Width
+                  - btnNext:
+                      Control: Button@0.0.45
+                      Properties:
+                        Appearance: ='ButtonCanvas.Appearance'.Transparent
+                        Height: =24
+                        Icon: ="ChevronRight"
+                        Layout: ='ButtonCanvas.Layout'.IconOnly
+                        LayoutMaxHeight: =0
+                        LayoutMaxWidth: =0
+                        LayoutMinHeight: =16
+                        LayoutMinWidth: =16
+                        OnSelect: =Carousel.ChangeItem("Next");Set(varStartTimer,false);Set(varGUID,GUID());
+                        Text: =
+                        Width: =24
+      - htmCTAButtonWidth:
+          Control: HtmlViewer@2.1.0
+          Properties:
+            AutoHeight: =true
+            DisplayMode: =DisplayMode.View
+            Fill: =RGBA(0, 0, 0, 0)
+            HtmlText: |-
+              =$"<div style='
+              display:inline-block;
+              margin:0 30px;
+              transform: rotate(90deg);
+              transform-origin: top left;
+              white-space:nowrap;'>
+              {btnAction.Text}</div>"
+            PaddingBottom: =0
+            PaddingLeft: =0
+            PaddingRight: =0
+            PaddingTop: =
+            Size: =18*0.75
+            Width: =40
+            X: =Self.Width*-2
+            Y: =20
